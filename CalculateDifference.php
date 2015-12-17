@@ -17,7 +17,18 @@ try{
 	   		//$h = new DiffChecker();
 	   		//var_dump($h->checkSubscriber($str1, $str2));
 	   		$batch = new CompareBatch($handle1, $handle2);
-	   		$batch->getDifference();
+	   		$result = $batch->getDifference();
+
+	   		if(empty($result)){
+	   			echo "All entries are equal";
+	   		}else{
+
+	   			echo "Number of different entries: " . count($result) . "<br>";
+
+	   			foreach($result as $item){
+	   				echo $item . "<br>";
+	   			}
+	   		}
 
 	   }else{
 	   		throw new InvalidArgumentException("Could Not Process Uploaded Files. They might be corrupted");
@@ -50,12 +61,20 @@ class CompareBatch{
 		$this->file2 = $resource2;
 		$this->channels = $channels;
 		$this->subscribers = $subscribers;
+		$this->resultSet = array();
 	}
 
 	public function getDifference(){
-		while($data = fgetcsv($file1,1024,",")){
-			
+		while($data1 = fgetcsv($this->file1,1024,",")){
+			$data2 = fgetcsv($this->file2, 1024,",");
+
+			if(!DiffChecker::compareChannels($data1[1], $data2[1]) || 
+				!DiffChecker::compareSubscribers($data1[2], $data2[2])){
+				array_push($this->resultSet, $data1[0]);
+			}
 		}
+
+		return $this->resultSet;
 	}
 }
 
