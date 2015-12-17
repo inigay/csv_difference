@@ -28,10 +28,12 @@
 				<input class="fileInput form-control" type="file"  name="file2" id="file2" />
 			</div>
 			<div class="col-lg-12 form-group" class="options">
+				<h3>Concerns:</h3>
 				<label for="subscriber_count">Subscriber Count</label>
-				<input type="text" class="optionInput form-control" name="subscriber_count" id="subscriber_count" />
-				<label for="subscriber_count">Channel Owner</label>
-				<input type="text" class="optionInput form-control" name="channel_owner" id="channel_owner" />
+				<input type="radio" value="subs" class="optionInput" name="concern" id="subscriber_count" />
+				<br>
+				<label for="channel_owner">Channel Owner</label>
+				<input type="radio" value="channel" class="optionInput" name="concern" id="channel_owner" />
 			</div>
 			<div class="col-lg-12">
 				<input type="submit" id="submitForm" class="btn btn-default" value="submit" name="submit" />

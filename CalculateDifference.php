@@ -6,19 +6,23 @@ const FILE2 = "file2.csv";
 try{
 
 	if ( move_uploaded_file ( $_FILES["file1"]["tmp_name"] , 
-	     "uploads/" . FILE2) && move_uploaded_file ( $_FILES["file2"]["tmp_name"] , 
+	     "uploads/" . FILE1) && move_uploaded_file ( $_FILES["file2"]["tmp_name"] , 
 	     "uploads/" . FILE2)){
 
 	  	$handle1 = fopen("uploads/" . FILE1, "r");
 		$handle2 = fopen("uploads/" . FILE2, "r");
 	   if( $handle1 != false && $handle2 != false){
 
+	   		fgetcsv($handle1);
+	   		fgetcsv($handle2);
 
-	   		//$h = new DiffChecker();
-	   		//var_dump($h->checkSubscriber($str1, $str2));
-	   		$batch = new CompareBatch($handle1, $handle2);
+	   		$concern = null;
+	   		if(isset($_POST['concern'])){
+	   			$concern = $_POST['concern'];
+	   		}
+
+	   		$batch = new CompareBatch($handle1, $handle2, $concern);
 	   		$result = $batch->getDifference();
-
 	   		if(empty($result)){
 	   			echo "All entries are equal";
 	   		}else{
@@ -30,11 +34,15 @@ try{
 	   			}
 	   		}
 
+
+
 	   }else{
 	   		throw new InvalidArgumentException("Could Not Process Uploaded Files. They might be corrupted");
 	   }
 	   		
-		
+	
+		fclose($handle1);
+		fclose($handle2);
 
 
 
@@ -52,27 +60,43 @@ class CompareBatch{
 
 	private $file1;
 	private $file2;
-	private $subscribers;
-	private $channels;
 	private $resultSet;
+	private $concern;
 
-	public function __construct(&$resource1, &$resource2, $channels = null, $subscribers = null){
+	public function __construct($resource1, $resource2, $concern = null)
+	{
 		$this->file1 = $resource1;
 		$this->file2 = $resource2;
-		$this->channels = $channels;
-		$this->subscribers = $subscribers;
+		$this->concern = $concern;
 		$this->resultSet = array();
 	}
 
-	public function getDifference(){
-		while($data1 = fgetcsv($this->file1,1024,",")){
-			$data2 = fgetcsv($this->file2, 1024,",");
+	public function getDifference()
+	{
+		
+			while($data1 = fgetcsv($this->file1,1024,",")){
+				$data2 = fgetcsv($this->file2, 1024,",");
 
-			if(!DiffChecker::compareChannels($data1[1], $data2[1]) || 
-				!DiffChecker::compareSubscribers($data1[2], $data2[2])){
-				array_push($this->resultSet, $data1[0]);
-			}
-		}
+				//Below code is redundant but it avoids making uneeded comparisons
+				if(is_null($this->concern)){
+					if(!DiffChecker::compareChannels($data1[1], $data2[1]) || 						
+						!DiffChecker::compareSubscribers($data1[2], $data2[2])){
+
+						array_push($this->resultSet, $data1[0]);
+					}
+				}elseif($this->concern == "channel"){
+					if(!DiffChecker::compareChannels($data1[1], $data2[1])){
+						array_push($this->resultSet, $data1[0]);
+					}
+				}elseif($this->concern == "subs"){
+					if(!DiffChecker::compareSubscribers($data1[2], $data2[2])){
+						array_push($this->resultSet, $data1[0]);
+					}
+				}else{
+					throw new InvalidArgumentException("Concern Provided Does not match our records");
+				}
+				
+			}		
 
 		return $this->resultSet;
 	}
@@ -80,7 +104,8 @@ class CompareBatch{
 
 class DiffChecker
 {
-	public static function compareSubscribers($str1, $str2){
+	public static function compareSubscribers($str1, $str2)
+	{
 		//cast to integers
 		$str1 = trim(str_replace(",", "", $str1), "\"");
 		$str2 = trim(str_replace(",", "", $str2), "\"");
@@ -90,7 +115,8 @@ class DiffChecker
 		return $sub1 == $sub2;
 	}
 
-	public static function compareChannels($str1, $str2){
+	public static function compareChannels($str1, $str2)
+	{
 		$str1 = str_replace("http://www.youtube.com/channel/", "", $str1);
 		$str2 = str_replace("http://www.youtube.com/channel/", "", $str2);
 
