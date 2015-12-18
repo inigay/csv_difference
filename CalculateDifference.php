@@ -119,13 +119,7 @@ class DiffChecker
 	public static function compareChannels($str1, $str2)
 	{
 		
-		//$str1 = str_replace("https://", "", $str1);
-		//$str1 = str_replace("http://", "", $str1);
-		//$str2 = str_replace("https://", "", $str2);
-		//$str2 = str_replace("https://", "", $str2);
 
-		//$str1 = str_replace("www.youtube.com/channel/", "", $str1);
-		//$str2 = str_replace("www.youtube.com/channel/", "", $str2);
 		$str1 = self::sterilize($str1, "channel/");
 		$str2 = self::sterilize($str2, "channel/");
 		
