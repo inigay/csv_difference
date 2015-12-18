@@ -3,6 +3,7 @@
 const FILE1 = "file1.csv";
 const FILE2 = "file2.csv";
 
+
 try{
 
 	if ( move_uploaded_file ( $_FILES["file1"]["tmp_name"] , 
@@ -117,9 +118,17 @@ class DiffChecker
 
 	public static function compareChannels($str1, $str2)
 	{
-		$str1 = str_replace("http://www.youtube.com/channel/", "", $str1);
-		$str2 = str_replace("http://www.youtube.com/channel/", "", $str2);
+		
+		//$str1 = str_replace("https://", "", $str1);
+		//$str1 = str_replace("http://", "", $str1);
+		//$str2 = str_replace("https://", "", $str2);
+		//$str2 = str_replace("https://", "", $str2);
 
+		//$str1 = str_replace("www.youtube.com/channel/", "", $str1);
+		//$str2 = str_replace("www.youtube.com/channel/", "", $str2);
+		$str1 = self::sterilize($str1, "channel/");
+		$str2 = self::sterilize($str2, "channel/");
+		
 		$len1 = strlen($str1);
 		$len2 = strlen($str2);
 
@@ -138,6 +147,19 @@ class DiffChecker
 
 		
 	}
+
+	private function sterilize($str, $filter){
+	if(($pos = strpos($str, $filter)) !== false){
+	
+		$str= substr($str, $pos + strlen($filter));
+		
+	}
+	
+	return $str;
+
+	}
+
+
 }
 
 ?>
